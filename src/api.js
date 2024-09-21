@@ -64,26 +64,36 @@ const api = {
       throw error;
     }
   },
-  
-  delete: async (url) => {
+
+  delete: async (url, data) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('No token found');
       }
 
-      const response = await fetch(url, {
+      const response = await fetch(`${API_BASE_URL}${url}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify(data),
       });
 
+      const responseText = await response.text();
+      console.log('Full DELETE response:', responseText);
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${responseText}`);
       }
 
-      return await response.json();
+      try {
+        return JSON.parse(responseText);
+      } catch (e) {
+        console.error('Error parsing JSON:', e);
+        return { message: responseText };
+      }
     } catch (error) {
       console.error('API error:', error);
       throw error;

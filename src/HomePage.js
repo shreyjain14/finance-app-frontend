@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from './api';
 
@@ -19,7 +19,7 @@ function HomePage() {
   const [deletingPaymentId, setDeletingPaymentId] = useState(null);
   const [deleteError, setDeleteError] = useState(null);
 
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     try {
       const data = await api.get('/payment/get');
       const sortedPayments = data.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -35,11 +35,11 @@ function HomePage() {
       }
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     fetchPayments();
-  }, [navigate]);
+  }, [fetchPayments]);
 
   useEffect(() => {
     const applyFilters = () => {
@@ -74,12 +74,14 @@ function HomePage() {
 
   const handleDeleteConfirm = async () => {
     try {
-      await api.delete(`/payment/delete/${deletingPaymentId}`);
+      console.log('Deleting payment with ID:', deletingPaymentId);
+      const response = await api.delete('/payment/delete', { id: deletingPaymentId });
+      console.log('Delete response:', response);
       fetchPayments(); // Refresh the payments list after successful deletion
       setDeletingPaymentId(null);
     } catch (error) {
       console.error('Error deleting payment:', error);
-      setDeleteError('Failed to delete payment. Please try again.');
+      setDeleteError(`Failed to delete payment: ${error.message}`);
     }
   };
 
