@@ -10,23 +10,25 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
+      <div className="App flex flex-col min-h-screen">
         <Navbar />
-        <Routes>
-          <Route path="/login" element={isAuthenticated ? <Navigate to="/add-payment" /> : <LoginPage />} />
-          <Route 
-            path="/add-payment" 
-            element={isAuthenticated ? <PaymentForm /> : <Navigate to="/login" />} 
-          />
-          <Route 
-            path="/view-payments" 
-            element={isAuthenticated ? <HomePage /> : <Navigate to="/login" />} 
-          />
-          <Route 
-            path="/" 
-            element={isAuthenticated ? <Navigate to="/add-payment" /> : <Navigate to="/login" />} 
-          />
-        </Routes>
+        <div className="flex-grow overflow-y-auto pb-16 md:pb-0">
+          <Routes>
+            <Route path="/login" element={isAuthenticated ? <Navigate to="/add-payment" /> : <LoginPage />} />
+            <Route 
+              path="/add-payment" 
+              element={isAuthenticated ? <PaymentForm /> : <Navigate to="/login" />} 
+            />
+            <Route 
+              path="/view-payments" 
+              element={isAuthenticated ? <HomePage /> : <Navigate to="/login" />} 
+            />
+            <Route 
+              path="/" 
+              element={isAuthenticated ? <Navigate to="/add-payment" /> : <Navigate to="/login" />} 
+            />
+          </Routes>
+        </div>
       </div>
     </Router>
   );
