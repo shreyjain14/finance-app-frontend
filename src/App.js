@@ -1,24 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import LoginPage from './LoginPage';
+import PaymentForm from './PaymentForm';
+import HomePage from './HomePage';
 
 function App() {
+  const isAuthenticated = !!localStorage.getItem('token');
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/home" /> : <LoginPage />} />
+        <Route 
+          path="/payment" 
+          element={isAuthenticated ? <PaymentForm /> : <Navigate to="/login" />}
+        />
+        <Route 
+          path="/home" 
+          element={isAuthenticated ? <HomePage /> : <Navigate to="/login" />}
+        />
+        <Route path="/" element={<Navigate to={isAuthenticated ? "/home" : "/login"} />} />
+      </Routes>
+    </Router>
   );
 }
 
