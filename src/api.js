@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
+const API_BASE_URL = "https://finance-backend.toystack.dev/";
 
 const api = {
   post: async (url, data, requiresAuth = true) => {
