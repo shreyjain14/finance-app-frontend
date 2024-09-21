@@ -15,25 +15,29 @@ function HomePage() {
   const [maxAmount, setMaxAmount] = useState('');
   const [paidTo, setPaidTo] = useState('');
 
-  useEffect(() => {
-    const fetchPayments = async () => {
-      try {
-        const data = await api.get('/payment/get');
-        const sortedPayments = data.sort((a, b) => new Date(b.date) - new Date(a.date));
-        setPayments(sortedPayments);
-        setFilteredPayments(sortedPayments);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching payments:', error);
-        if (error.message === 'No token found') {
-          navigate('/login');
-        } else {
-          setError('Failed to fetch payments. Please try again later.');
-        }
-        setLoading(false);
-      }
-    };
+  // Deletion states
+  const [deletingPaymentId, setDeletingPaymentId] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
 
+  const fetchPayments = async () => {
+    try {
+      const data = await api.get('/payment/get');
+      const sortedPayments = data.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setPayments(sortedPayments);
+      setFilteredPayments(sortedPayments);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching payments:', error);
+      if (error.message === 'No token found') {
+        navigate('/login');
+      } else {
+        setError('Failed to fetch payments. Please try again later.');
+      }
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchPayments();
   }, [navigate]);
 
@@ -62,6 +66,27 @@ function HomePage() {
 
     applyFilters();
   }, [payments, paymentMethod, minAmount, maxAmount, paidTo]);
+
+  const handleDeleteClick = (id) => {
+    setDeletingPaymentId(id);
+    setDeleteError(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await api.delete(`/payment/delete/${deletingPaymentId}`);
+      fetchPayments(); // Refresh the payments list after successful deletion
+      setDeletingPaymentId(null);
+    } catch (error) {
+      console.error('Error deleting payment:', error);
+      setDeleteError('Failed to delete payment. Please try again.');
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeletingPaymentId(null);
+    setDeleteError(null);
+  };
 
   if (loading) return <div className="text-center mt-10">Loading payments...</div>;
   if (error) return <div className="text-center mt-10 text-red-500">{error}</div>;
@@ -108,16 +133,58 @@ function HomePage() {
       {/* Payments List */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {filteredPayments.map(payment => (
-          <div key={payment.id} className="bg-white shadow-md rounded p-4">
+          <div key={payment.id} className="bg-white shadow-md rounded p-4 relative">
             <div className="font-bold text-xl mb-2">₹{payment.amount}</div>
             <p className="text-gray-700">Paid to: {payment.payed_to}</p>
             <p className="text-gray-700">Paid from: {payment.payed_from}</p>
             <p className="text-gray-700">
               Date: {new Date(payment.date).toLocaleDateString()} {new Date(payment.date).toLocaleTimeString()}
             </p>
+            <button
+              onClick={() => handleDeleteClick(payment.id)}
+              className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+              aria-label="Delete payment"
+            >
+              🗑️
+            </button>
           </div>
         ))}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {deletingPaymentId && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="my-modal">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">Delete Payment</h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  Are you sure you want to delete this payment? This action cannot be undone.
+                </p>
+              </div>
+              {deleteError && (
+                <p className="text-red-500 text-sm mt-2">{deleteError}</p>
+              )}
+              <div className="items-center px-4 py-3">
+                <button
+                  id="ok-btn"
+                  className="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  onClick={handleDeleteConfirm}
+                >
+                  Delete
+                </button>
+                <button
+                  id="cancel-btn"
+                  className="px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-24 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  onClick={handleDeleteCancel}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
