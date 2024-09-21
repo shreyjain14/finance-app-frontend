@@ -1,19 +1,23 @@
-const API_BASE_URL = "https://finance-backend.toystack.dev/";
+const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
 const api = {
-  post: async (url, data) => {
+  post: async (url, data, requiresAuth = true) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No token found');
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      if (requiresAuth) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No token found');
+        }
+        headers['Authorization'] = `Bearer ${token}`;
       }
 
       const response = await fetch(`${API_BASE_URL}${url}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: headers,
         body: JSON.stringify(data),
       });
 
