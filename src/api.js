@@ -64,6 +64,33 @@ const api = {
       throw error;
     }
   },
+
+  delete: async (url) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}${url}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'An error occurred');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('API error:', error);
+      throw error;
+    }
+  },
 };
 
 export default api;
