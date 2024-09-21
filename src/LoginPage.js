@@ -3,103 +3,87 @@ import { useNavigate } from 'react-router-dom';
 import api from './api';
 
 function LoginPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      console.log('Attempting login...');
-      const response = await api.post('/auth/login', { username, password });
-      console.log('Login successful. Response:', response.data);
-      
-      if (response.data.tokens && response.data.tokens.access) {
-        localStorage.setItem('token', response.data.tokens.access);
-        console.log('Token stored in localStorage');
-        
-        // Add a delay before navigation (for debugging purposes)
-        setTimeout(() => {
-          console.log('Navigating to /payment');
-          navigate('/payment');
-        }, 1000); // 1 second delay
-      } else {
-        console.error('Token not found in response');
-        alert('Login successful, but token not received. Please try again.');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
+  
+    const handleLogin = async (e) => {
+      e.preventDefault();
+      setError('');
+      setIsLoading(true);
+  
+      try {
+        const response = await api.post('/auth/login', { username, password });
+        console.log('Login response:', response); // For debugging
+  
+        if (response && response.tokens && response.tokens.access) {
+          localStorage.setItem('token', response.tokens.access);
+          localStorage.setItem('refreshToken', response.tokens.refresh); // Store refresh token if needed
+          navigate('/view-payments');
+        } else {
+          setError('Login failed: Invalid response from server');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        setError('Login failed: ' + (error.message || 'Unknown error'));
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Login failed:', error.response ? error.response.data : error.message);
-      alert('Login failed. Please check your credentials.');
-    }
-  };
+    };
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-      backgroundColor: '#f3f4f6'
-    }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '400px',
-        padding: '2rem',
-        backgroundColor: 'white',
-        borderRadius: '0.5rem',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-      }}>
-        <h2 style={{
-          fontSize: '1.5rem',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          marginBottom: '1.5rem'
-        }}>Sign in to your account</h2>
-        <form onSubmit={handleLogin}>
-          <div style={{ marginBottom: '1rem' }}>
-            <label htmlFor="username" style={{ display: 'block', marginBottom: '0.5rem' }}>Username</label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.25rem'
-              }}
-            />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
+          <input type="hidden" name="remember" value="true" />
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="username" className="sr-only">Username</label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">Password</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
           </div>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label htmlFor="password" style={{ display: 'block', marginBottom: '0.5rem' }}>Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.25rem'
-              }}
-            />
+
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Signing in...' : 'Sign in'}
+            </button>
           </div>
-          <button
-            type="submit"
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              backgroundColor: '#4f46e5',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.25rem',
-              cursor: 'pointer'
-            }}
-          >
-            Sign in
-          </button>
         </form>
       </div>
     </div>

@@ -1,26 +1,22 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import LoginPage from './LoginPage';
-import PaymentForm from './PaymentForm';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Navbar from './Navbar';
 import HomePage from './HomePage';
+import PaymentForm from './PaymentForm';
+import LoginPage from './LoginPage';
 
 function App() {
-  const isAuthenticated = !!localStorage.getItem('token');
-
   return (
     <Router>
-      <Routes>
-        <Route path="/login" element={isAuthenticated ? <Navigate to="/home" /> : <LoginPage />} />
-        <Route 
-          path="/payment" 
-          element={isAuthenticated ? <PaymentForm /> : <Navigate to="/login" />}
-        />
-        <Route 
-          path="/home" 
-          element={isAuthenticated ? <HomePage /> : <Navigate to="/login" />}
-        />
-        <Route path="/" element={<Navigate to={isAuthenticated ? "/home" : "/login"} />} />
-      </Routes>
+      <div className="App">
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/add-payment" element={<PaymentForm />} />
+          <Route path="/view-payments" element={<HomePage />} />
+        </Routes>
+      </div>
     </Router>
   );
 }

@@ -1,94 +1,110 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from './api';
 
 function PaymentForm() {
   const [amount, setAmount] = useState('');
-  const [payedTo, setPayedTo] = useState('Zepto');
   const [payedFrom, setPayedFrom] = useState('AMEX');
+  const [payedTo, setPayedTo] = useState('Zepto');
   const [otherPayedTo, setOtherPayedTo] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSuccessMessage('');
+    setErrorMessage('');
+
     try {
-      const response = await api.post('/payment/create', {
+      await api.post('/payment/create', {
         amount,
         payed_from: payedFrom,
         payed_to: payedTo === 'Other' ? otherPayedTo : payedTo
       });
-      console.log('Payment submitted:', response.data);
-      alert('Payment submitted successfully');
+      
+      setSuccessMessage('Payment submitted successfully');
+      // Clear form fields
+      setAmount('');
+      setPayedFrom('AMEX');
+      setPayedTo('Zepto');
+      setOtherPayedTo('');
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       console.error('Payment submission failed:', error);
-      alert('Payment submission failed. Please try again.');
+      if (error.message === 'No token found') {
+        setErrorMessage('You need to login first');
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        setErrorMessage(`Payment submission failed: ${error.message}`);
+      }
     }
   };
 
   return (
-    <div style={{
-      maxWidth: '400px',
-      margin: '40px auto',
-      padding: '20px',
-      boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-      borderRadius: '8px'
-    }}>
-      <h2 style={{textAlign: 'center', marginBottom: '20px'}}>Submit Payment</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{marginBottom: '15px'}}>
-          <label style={{display: 'block', marginBottom: '5px'}}>Amount:</label>
+    <div className="container mx-auto mt-10 p-4">
+      <h2 className="text-2xl font-bold mb-4">Add New Payment</h2>
+      {successMessage && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <span className="block sm:inline">{successMessage}</span>
+        </div>
+      )}
+      {errorMessage && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <span className="block sm:inline">{errorMessage}</span>
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block mb-1">Amount:</label>
           <input
             type="number"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            style={{width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd'}}
+            className="w-full p-2 border rounded"
             required
           />
         </div>
-        <div style={{marginBottom: '15px'}}>
-          <label style={{display: 'block', marginBottom: '5px'}}>Payed To:</label>
-          <select
-            value={payedTo}
-            onChange={(e) => setPayedTo(e.target.value)}
-            style={{width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd'}}
-          >
-            <option value="Zepto">Zepto</option>
-            <option value="BlinkIt">BlinkIt</option>
-            <option value="Amazon">Amazon</option>
-            <option value="Other">Other</option>
-          </select>
-          {payedTo === 'Other' && (
-            <input
-              type="text"
-              value={otherPayedTo}
-              onChange={(e) => setOtherPayedTo(e.target.value)}
-              placeholder="Specify other"
-              style={{width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd', marginTop: '5px'}}
-            />
-          )}
-        </div>
-        <div style={{marginBottom: '15px'}}>
-          <label style={{display: 'block', marginBottom: '5px'}}>Payed From:</label>
+        <div>
+          <label className="block mb-1">Paid From:</label>
           <select
             value={payedFrom}
             onChange={(e) => setPayedFrom(e.target.value)}
-            style={{width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd'}}
+            className="w-full p-2 border rounded"
           >
             <option value="AMEX">AMEX</option>
             <option value="BONVOY">BONVOY</option>
             <option value="REGALIA">REGALIA</option>
           </select>
         </div>
-        <button 
-          type="submit"
-          style={{
-            width: '100%',
-            padding: '10px',
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
+        <div>
+          <label className="block mb-1">Paid To:</label>
+          <select
+            value={payedTo}
+            onChange={(e) => setPayedTo(e.target.value)}
+            className="w-full p-2 border rounded"
+          >
+            <option value="Zepto">Zepto</option>
+            <option value="BlinkIt">Blink It</option>
+            <option value="Amazon">Amazon</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        {payedTo === 'Other' && (
+          <div>
+            <label className="block mb-1">Specify Other:</label>
+            <input
+              type="text"
+              value={otherPayedTo}
+              onChange={(e) => setOtherPayedTo(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+        )}
+        <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Submit Payment
         </button>
       </form>
