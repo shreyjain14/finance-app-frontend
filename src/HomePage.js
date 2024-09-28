@@ -140,7 +140,16 @@ function HomePage() {
             <p className="text-gray-700">Paid to: {payment.payed_to}</p>
             <p className="text-gray-700">Paid from: {payment.payed_from}</p>
             <p className="text-gray-700">
-              Date: {new Date(payment.date).toLocaleDateString()} {new Date(payment.date).toLocaleTimeString()}
+              Date: {new Date(payment.date).toLocaleString(undefined, { 
+                timeZone: 'UTC', 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit', 
+                hour12: false 
+              })}
             </p>
             <button
               onClick={() => handleDeleteClick(payment.id)}
