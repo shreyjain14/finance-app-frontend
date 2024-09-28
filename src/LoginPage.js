@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from './api';
 
@@ -8,6 +8,14 @@ function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // If a token is found in localStorage, navigate to the add-payment page
+      navigate('/add-payment', { replace: true });
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +28,10 @@ function LoginPage() {
 
       if (response && response.tokens && response.tokens.access) {
         localStorage.setItem('token', response.tokens.access);
-        navigate('/');
+        // Redirect to the add payments page after successful login
+        navigate('/add-payment', { replace: true });
+        // Reload the page to fetch data
+        window.location.reload();
       } else {
         setError('Invalid response from server');
       }
