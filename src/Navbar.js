@@ -32,7 +32,7 @@ function Navbar() {
       </nav>
 
       {/* Mobile Bottom Navbar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 z-50"> {/* Added z-50 */}
         <div className="flex justify-around items-center h-16">
           <Link 
             to="/view-payments" 
