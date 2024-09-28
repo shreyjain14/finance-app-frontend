@@ -9,12 +9,14 @@ function PaymentForm() {
   const [otherPayedTo, setOtherPayedTo] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false); // New state for button disabling
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSuccessMessage('');
     setErrorMessage('');
+    setIsSubmitting(true); // Disable button on submit
 
     try {
       await api.post('/payment/create', {
@@ -40,6 +42,8 @@ function PaymentForm() {
       } else {
         setErrorMessage(`Payment submission failed: ${error.message}`);
       }
+    } finally {
+      setIsSubmitting(false); // Re-enable button once response is received
     }
   };
 
@@ -104,8 +108,12 @@ function PaymentForm() {
             />
           </div>
         )}
-        <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Submit Payment
+        <button
+          type="submit"
+          className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isSubmitting} // Disable button when submitting
+        >
+          {isSubmitting ? 'Submitting...' : 'Submit Payment'}
         </button>
       </form>
     </div>
