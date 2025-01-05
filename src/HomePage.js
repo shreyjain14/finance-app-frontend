@@ -106,7 +106,7 @@ function HomePage() {
         >
           <option value="">All Payment Methods</option>
           <option value="AMEX">AMEX</option>
-          <option value="BONVOY">BONVOY</option>
+          <option value="BizBlack">BizBlack</option>
           <option value="REGALIA">REGALIA</option>
         </select>
         <input
