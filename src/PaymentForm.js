@@ -79,7 +79,7 @@ function PaymentForm() {
             className="w-full p-2 border rounded"
           >
             <option value="AMEX">AMEX</option>
-            <option value="BONVOY">BONVOY</option>
+            <option value="BizBlack">BizBlack</option>
             <option value="REGALIA">REGALIA</option>
           </select>
         </div>
